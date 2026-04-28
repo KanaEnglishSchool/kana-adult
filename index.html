@@ -506,17 +506,28 @@
     const DAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
 
     async function initLiff() {
-      try {
-        await liff.init({ liffId: CONFIG.LIFF_ID });
-        if (!liff.isLoggedIn()) { liff.login(); return; }
-        const profile = await liff.getProfile();
-        lineUserId = profile.userId;
-        lineDisplayName = profile.displayName;
-        await loadStudent();
-      } catch (err) {
-        showError('LIFFの初期化に失敗しました。');
-      }
+  try {
+    await liff.init({ 
+      liffId: CONFIG.LIFF_ID,
+      withLoginOnExternalBrowser: true 
+    });
+    
+    if (!liff.isLoggedIn()) { 
+      liff.login(); 
+      return; 
     }
+    
+    const profile = await liff.getProfile();
+    lineUserId = profile.userId;
+    lineDisplayName = profile.displayName;
+    await loadStudent();
+
+  } catch (err) {
+    // THIS PART IS KEY: It will show the specific error on your phone screen
+    console.error(err);
+    showError('Error Details: ' + err.code + " - " + err.message);
+  }
+}
 
     async function loadStudent() {
       try {
