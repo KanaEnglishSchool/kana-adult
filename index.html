@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>大人レッスン予約 - KANA English</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F7F6F3;
+      --card: #FFFFFF;
+      --primary: #8B4513;
+      --primary-light: #F5E6D3;
+      --primary-dark: #6B3410;
+      --text: #2C2C2C;
+      --text-light: #6B6B6B;
+      --border: #E0DED8;
+      --error: #C0392B;
+      --error-bg: #FDEDEB;
+      --success: #27AE60;
+      --success-bg: #E8F8F0;
+      --warning: #E67E22;
+      --warning-bg: #FEF5E7;
+      --shadow: 0 2px 12px rgba(0,0,0,0.06);
+      --radius: 14px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 0 100px 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 20px 16px 24px;
+      text-align: center;
+      position: relative;
+    }
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 0; right: 0;
+      height: 24px;
+      background: var(--bg);
+      border-radius: 16px 16px 0 0;
+    }
+    .header h1 { font-size: 18px; font-weight: 700; }
+    .header p { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+    .container {
+      max-width: 480px;
+      margin: 8px auto 0;
+      padding: 0 12px;
+    }
+
+    /* Credit banner */
+    .credit-banner {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 12px;
+      border-left: 4px solid var(--primary);
+    }
+    .credit-banner .cb-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .credit-banner .cb-label {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    .credit-banner .cb-count {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+    .credit-banner .cb-expiry {
+      font-size: 11px;
+      color: var(--warning);
+      margin-top: 2px;
+    }
+
+    /* Choice cards */
+    .choice-grid {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .choice-card {
+      flex: 1;
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 18px 12px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .choice-card:active { border-color: var(--primary); background: var(--primary-light); }
+    .choice-card .icon { font-size: 28px; margin-bottom: 6px; }
+    .choice-card .title { font-size: 14px; font-weight: 700; color: var(--primary-dark); }
+    .choice-card .desc { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+
+    /* Week navigation */
+    .week-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow);
+    }
+    .week-nav button {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: var(--primary);
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+    .week-nav button:active { background: var(--primary-light); }
+    .week-nav button:disabled { color: var(--border); cursor: not-allowed; }
+    .week-nav .week-label {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    /* Day grid */
+    .day-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 8px;
+      box-shadow: var(--shadow);
+    }
+    .day-card.holiday { opacity: 0.5; }
+    .day-card .day-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .day-card .day-name {
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .day-card .day-date {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    .day-card .holiday-tag {
+      font-size: 11px;
+      color: var(--warning);
+      font-weight: 500;
+    }
+
+    .slot-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .slot {
+      padding: 10px 4px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .slot.open {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+    .slot.open:active, .slot.open.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+    .slot.full, .slot.closed, .slot.late, .slot.level_conflict {
+      background: #f5f5f5;
+      color: var(--text-light);
+      cursor: not-allowed;
+    }
+    .slot.own {
+      background: var(--primary);
+      color: white;
+      cursor: not-allowed;
+    }
+
+    .slot-legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 10px 12px;
+      background: var(--card);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      font-size: 11px;
+      color: var(--text-light);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+    .legend-dot.open { background: var(--success-bg); border: 1px solid var(--success); }
+    .legend-dot.full { background: #f5f5f5; border: 1px solid var(--border); }
+    .legend-dot.own { background: var(--primary); }
+
+    /* Floating action bar */
+    .action-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.1);
+      padding: 12px 16px;
+      z-index: 50;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .action-bar .selected-count {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      flex: 1;
+    }
+    .action-bar button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .action-bar button:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary {
+      background: white; color: var(--text);
+      border: 2px solid var(--border); margin-top: 8px;
+    }
+
+    /* Confirmation */
+    .confirm-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+      border-left: 4px solid var(--primary);
+    }
+    .confirm-card h3 {
+      font-size: 14px;
+      color: var(--primary-dark);
+      margin-bottom: 12px;
+    }
+    .confirm-row {
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .confirm-row:last-child { border-bottom: none; }
+
+    .info-box {
+      background: var(--primary-light);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--primary-dark);
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    /* Cancel list */
+    .booking-card {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+    }
+    .booking-card:active, .booking-card.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .booking-card .bc-date { font-weight: 700; font-size: 14px; }
+    .booking-card .bc-time { font-size: 12px; color: var(--text-light); }
+
+    .success-screen { text-align: center; padding: 40px 20px; }
+    .success-icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: var(--success-bg);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 32px;
+    }
+    .success-screen h2 { font-size: 18px; margin-bottom: 6px; }
+    .success-screen p { color: var(--text-light); font-size: 13px; line-height: 1.6; }
+
+    .loading-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(247,246,243,0.92);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 100;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+    .empty-state {
+      text-align: center; padding: 30px 20px;
+      color: var(--text-light); font-size: 13px;
+    }
+    .empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+    .status-error {
+      background: var(--error-bg); color: var(--error);
+      padding: 12px; border-radius: 10px;
+      text-align: center; font-size: 13px; margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loading" class="loading-overlay">
+    <div class="spinner"></div>
+    <p style="margin-top:12px;font-size:13px;color:var(--text-light);">読み込み中...</p>
+  </div>
+
+  <div class="header">
+    <h1>📚 大人レッスン予約</h1>
+    <p>KANA English</p>
+  </div>
+
+  <!-- ════════ MAIN SCREEN ════════ -->
+  <div id="mainScreen" class="container hidden">
+    <div class="credit-banner">
+      <div class="cb-row">
+        <div>
+          <div class="cb-label">予約可能レッスン数</div>
+          <div class="cb-count"><span id="creditCount">-</span> 回</div>
+          <div class="cb-expiry" id="creditExpiry"></div>
+        </div>
+        <div style="text-align:right;">
+          <div class="cb-label">レベル</div>
+          <div style="font-size:18px;font-weight:700;color:var(--primary-dark);" id="levelLabel">-</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="choice-grid">
+      <div class="choice-card" onclick="startBooking()">
+        <div class="icon">📅</div>
+        <div class="title">レッスンを予約</div>
+        <div class="desc">空き時間から選択</div>
+      </div>
+      <div class="choice-card" onclick="startCancel()">
+        <div class="icon">✖️</div>
+        <div class="title">予約をキャンセル</div>
+        <div class="desc">既存の予約を取消</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ GRID SCREEN ════════ -->
+  <div id="gridScreen" class="container hidden">
+    <div class="info-box">
+      クレジット残高: <strong><span id="gridCredits">-</span></strong> 回 ｜ レベル: <strong><span id="gridLevel">-</span></strong>
+    </div>
+
+    <div class="week-nav">
+      <button id="prevWeekBtn" onclick="loadWeek(currentWeek.prevWeek)">‹ 前週</button>
+      <span class="week-label" id="weekLabel">-</span>
+      <button id="nextWeekBtn" onclick="loadWeek(currentWeek.nextWeek)">次週 ›</button>
+    </div>
+
+    <div class="slot-legend">
+      <div class="legend-item"><span class="legend-dot open"></span>空きあり</div>
+      <div class="legend-item"><span class="legend-dot full"></span>不可</div>
+      <div class="legend-item"><span class="legend-dot own"></span>予約済</div>
+    </div>
+
+    <div id="dayList"></div>
+
+    <button class="btn btn-secondary" onclick="showScreen('mainScreen')">メニューに戻る</button>
+  </div>
+
+  <div id="actionBar" class="action-bar hidden">
+    <div class="selected-count">
+      <span id="selectedCount">0</span> 件選択 ｜ 残り: <span id="remainingCredits">-</span>
+    </div>
+    <button id="confirmBtn" onclick="showConfirmation()">確認へ</button>
+  </div>
+
+  <!-- ════════ CONFIRM SCREEN ════════ -->
+  <div id="confirmScreen" class="container hidden">
+    <div class="confirm-card">
+      <h3>📋 以下のレッスンを予約します</h3>
+      <div id="confirmList"></div>
+    </div>
+    <div class="info-box" id="confirmCreditInfo"></div>
+    <div class="info-box">⚠️ キャンセルは前日20時まで可能です。それ以降はお電話ください。</div>
+    <button class="btn btn-primary" id="bookBtn" onclick="submitBookings()">予約を確定する</button>
+    <button class="btn btn-secondary" onclick="showScreen('gridScreen')">修正する</button>
+  </div>
+
+  <!-- ════════ CANCEL SCREEN ════════ -->
+  <div id="cancelScreen" class="container hidden">
+    <div class="info-box">キャンセルしたいレッスンを選択してください。<br>キャンセル可能: 前日20時まで</div>
+    <div id="cancelList"></div>
+    <button class="btn btn-primary" onclick="confirmCancellation()">選択した予約をキャンセル</button>
+    <button class="btn btn-secondary" onclick="showScreen('mainScreen')">戻る</button>
+  </div>
+
+  <!-- ════════ CONFIRM CANCEL SCREEN ════════ -->
+  <div id="confirmCancelScreen" class="container hidden">
+    <div class="confirm-card">
+      <h3>⚠️ 以下の予約をキャンセルしますか？</h3>
+      <div id="cancelConfirmList"></div>
+    </div>
+    <div class="info-box">キャンセル後、レッスンクレジットは戻ります（元の有効期限を維持）。</div>
+    <button class="btn btn-primary" id="cancelConfirmBtn" onclick="submitCancellation()">キャンセルを確定</button>
+    <button class="btn btn-secondary" onclick="showScreen('cancelScreen')">戻る</button>
+  </div>
+
+  <!-- ════════ SUCCESS ════════ -->
+  <div id="successScreen" class="container hidden">
+    <div class="success-screen">
+      <div class="success-icon">✅</div>
+      <h2 id="successTitle">予約完了</h2>
+      <p id="successMessage">レッスンを予約しました。</p>
+      <button class="btn btn-primary" style="margin-top:20px;" onclick="closeLiff()">閉じる</button>
+    </div>
+  </div>
+
+  <!-- ════════ ERROR ════════ -->
+  <div id="errorScreen" class="container hidden">
+    <div class="status-error" id="errorMessage">エラーが発生しました。</div>
+    <button class="btn btn-primary" onclick="location.reload()">やり直す</button>
+  </div>
+
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script>
+    const CONFIG = {
+      LIFF_ID: '2009843493-io768e84',
+      STUDENT_API: 'https://hook.eu1.make.com/5ccwg3jy3wnee5pizu3e6evn0zua6yrb',
+      BOOKING_WEBHOOK: 'https://hook.eu1.make.com/hzo6l7awk6grn8cy68zsd908h56y3jm9',
+      CANCEL_WEBHOOK: 'https://hook.eu1.make.com/ps5o8grjljex48tdbf104r1jcpu8a5kv',
+      API_SECRET: '1234567890123456789012345678901234567890'
+    };
+
+    let lineUserId = null;
+    let lineDisplayName = null;
+    let currentStudent = null;
+    let creditCount = 0;
+    let selectedSlots = [];
+    let currentWeek = null;
+    let cancelSelections = [];
+    let allBookings = [];
+
+    const DAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
+
+    async function initLiff() {
+      try {
+        await liff.init({ liffId: CONFIG.LIFF_ID });
+        if (!liff.isLoggedIn()) { liff.login(); return; }
+        const profile = await liff.getProfile();
+        lineUserId = profile.userId;
+        lineDisplayName = profile.displayName;
+        await loadStudent();
+      } catch (err) {
+        showError('LIFFの初期化に失敗しました。');
+      }
+    }
+
+    async function loadStudent() {
+      try {
+        const url = CONFIG.STUDENT_API + '?mode=students&userId=' + encodeURIComponent(lineUserId) + '&secret=' + encodeURIComponent(CONFIG.API_SECRET);
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!data.students || data.students.length === 0) {
+          showError('生徒情報が見つかりません。');
+          return;
+        }
+        // Find adult student
+        currentStudent = data.students.find(s => s.isAdult);
+        if (!currentStudent) {
+          showError('大人レッスンの登録がありません。');
+          return;
+        }
+        await loadCredits();
+        showScreen('mainScreen');
+      } catch (err) {
+        showError('情報の読み込みに失敗しました。');
+      }
+    }
+
+    async function loadCredits() {
+      try {
+        const url = CONFIG.STUDENT_API + '?mode=adult_credits&studentName=' + encodeURIComponent(currentStudent.name) + '&secret=' + encodeURIComponent(CONFIG.API_SECRET);
+        const res = await fetch(url);
+        const data = await res.json();
+        creditCount = data.available || 0;
+        document.getElementById('creditCount').textContent = creditCount;
+        document.getElementById('levelLabel').textContent = currentStudent.adultLevel || '-';
+        document.getElementById('gridCredits').textContent = creditCount;
+        document.getElementById('gridLevel').textContent = currentStudent.adultLevel || '-';
+        document.getElementById('remainingCredits').textContent = creditCount;
+        if (data.nextExpiry) {
+          const exp = new Date(data.nextExpiry + 'T00:00:00');
+          document.getElementById('creditExpiry').textContent =
+            '次回有効期限: ' + (exp.getMonth()+1) + '月' + exp.getDate() + '日';
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // ════════ BOOKING FLOW ════════
+    async function startBooking() {
+      if (creditCount <= 0) {
+        showError('予約可能なクレジットがありません。');
+        return;
+      }
+      selectedSlots = [];
+      await loadWeek(null);
+      showScreen('gridScreen');
+    }
+
+    async function loadWeek(weekStart) {
+      document.getElementById('dayList').innerHTML = '<div style="text-align:center;padding:20px;"><div class="spinner" style="width:24px;height:24px;display:inline-block;"></div></div>';
+      try {
+        let url = CONFIG.STUDENT_API + '?mode=adult_grid&studentName=' + encodeURIComponent(currentStudent.name) + '&secret=' + encodeURIComponent(CONFIG.API_SECRET);
+        if (weekStart) url += '&weekStart=' + encodeURIComponent(weekStart);
+        const res = await fetch(url);
+        const data = await res.json();
+        currentWeek = data;
+        renderWeek(data);
+      } catch (err) {
+        document.getElementById('dayList').innerHTML = '<div class="status-error">読み込みに失敗しました。</div>';
+      }
+    }
+
+    function renderWeek(data) {
+      const monday = new Date(data.weekStart + 'T00:00:00');
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 5);
+      document.getElementById('weekLabel').textContent =
+        (monday.getMonth()+1) + '/' + monday.getDate() + ' - ' + (sunday.getMonth()+1) + '/' + sunday.getDate();
+
+      const list = document.getElementById('dayList');
+      list.innerHTML = '';
+
+      data.days.forEach(day => {
+        const div = document.createElement('div');
+        div.className = 'day-card' + (day.isHoliday ? ' holiday' : '');
+
+        let header = '<div class="day-header">' +
+          '<span class="day-name">' + day.dayName + ' ' + day.displayDate + '</span>';
+        if (day.isHoliday) header += '<span class="holiday-tag">休校日</span>';
+        else if (day.isPast) header += '<span class="holiday-tag">過去</span>';
+        header += '</div>';
+
+        let slotsHtml = '';
+        if (day.slots.length === 0) {
+          slotsHtml = '<div style="font-size:11px;color:var(--text-light);text-align:center;padding:8px 0;">大人レッスンなし</div>';
+        } else {
+          slotsHtml = '<div class="slot-row">';
+          day.slots.forEach(slot => {
+            const slotKey = day.date + '|' + slot.time;
+            const isSelected = selectedSlots.indexOf(slotKey) > -1;
+            const tappable = slot.status === 'open';
+            slotsHtml += '<div class="slot ' + slot.status + (isSelected ? ' selected' : '') + '" ' +
+              (tappable ? 'onclick="toggleSlot(\'' + day.date + '\',\'' + slot.time + '\')"' : '') +
+              ' data-key="' + slotKey + '">' + slot.time + '</div>';
+          });
+          slotsHtml += '</div>';
+        }
+
+        div.innerHTML = header + slotsHtml;
+        list.appendChild(div);
+      });
+
+      updateActionBar();
+    }
+
+    function toggleSlot(date, time) {
+      const key = date + '|' + time;
+      const idx = selectedSlots.indexOf(key);
+      if (idx > -1) {
+        selectedSlots.splice(idx, 1);
+      } else {
+        if (selectedSlots.length >= creditCount) {
+          alert('クレジットが足りません。');
+          return;
+        }
+        selectedSlots.push(key);
+      }
+      // Re-render to update visual state
+      const slotEl = document.querySelector('[data-key="' + key + '"]');
+      if (slotEl) slotEl.classList.toggle('selected');
+      updateActionBar();
+    }
+
+    function updateActionBar() {
+      const bar = document.getElementById('actionBar');
+      document.getElementById('selectedCount').textContent = selectedSlots.length;
+      document.getElementById('remainingCredits').textContent = creditCount - selectedSlots.length;
+      document.getElementById('confirmBtn').disabled = selectedSlots.length === 0;
+      if (selectedSlots.length > 0) {
+        bar.classList.remove('hidden');
+      } else {
+        bar.classList.add('hidden');
+      }
+    }
+
+    function showConfirmation() {
+      const list = document.getElementById('confirmList');
+      list.innerHTML = '';
+      selectedSlots.sort();
+      selectedSlots.forEach(key => {
+        const [date, time] = key.split('|');
+        const d = new Date(date + 'T00:00:00');
+        const div = document.createElement('div');
+        div.className = 'confirm-row';
+        div.textContent = (d.getMonth()+1) + '月' + d.getDate() + '日（' + DAY_NAMES[d.getDay()] + '）' + time;
+        list.appendChild(div);
+      });
+      document.getElementById('confirmCreditInfo').textContent =
+        '使用クレジット: ' + selectedSlots.length + ' 回 ｜ 残り: ' + (creditCount - selectedSlots.length) + ' 回';
+      showScreen('confirmScreen');
+    }
+
+    async function submitBookings() {
+      const btn = document.getElementById('bookBtn');
+      btn.disabled = true;
+      btn.textContent = '予約中...';
+
+      const lessons = selectedSlots.map(key => {
+        const [date, time] = key.split('|');
+        return { date, time };
+      });
+
+      const payload = {
+        lineUserId,
+        lineDisplayName,
+        studentName: currentStudent.name,
+        adultLevel: currentStudent.adultLevel,
+        lessons,
+        submittedAt: new Date().toISOString()
+      };
+
+      try {
+        const res = await fetch(CONFIG.BOOKING_WEBHOOK, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          document.getElementById('successTitle').textContent = '予約完了';
+          document.getElementById('successMessage').textContent =
+            selectedSlots.length + ' 件のレッスンを予約しました。';
+          showScreen('successScreen');
+        } else {
+          throw new Error();
+        }
+      } catch (err) {
+        showError('予約に失敗しました。');
+      }
+    }
+
+    // ════════ CANCEL FLOW ════════
+    async function startCancel() {
+      cancelSelections = [];
+      showScreen('cancelScreen');
+      document.getElementById('cancelList').innerHTML = '<div style="text-align:center;padding:20px;"><div class="spinner" style="width:24px;height:24px;display:inline-block;"></div></div>';
+
+      try {
+        const url = CONFIG.STUDENT_API + '?mode=adult_bookings&studentName=' + encodeURIComponent(currentStudent.name) + '&secret=' + encodeURIComponent(CONFIG.API_SECRET);
+        const res = await fetch(url);
+        const data = await res.json();
+        allBookings = data.bookings || [];
+        if (allBookings.length === 0) {
+          document.getElementById('cancelList').innerHTML =
+            '<div class="empty-state"><div class="icon">📭</div>キャンセル可能な予約はありません。</div>';
+          return;
+        }
+        renderCancelList();
+      } catch (err) {
+        document.getElementById('cancelList').innerHTML = '<div class="status-error">読み込みに失敗しました。</div>';
+      }
+    }
+
+    function renderCancelList() {
+      const list = document.getElementById('cancelList');
+      list.innerHTML = '';
+      allBookings.forEach((bk, i) => {
+        const d = new Date(bk.date + 'T00:00:00');
+        const div = document.createElement('div');
+        div.className = 'booking-card';
+        div.setAttribute('data-cancel-idx', i);
+        div.onclick = () => toggleCancel(i);
+        div.innerHTML =
+          '<div class="bc-date">' + (d.getMonth()+1) + '月' + d.getDate() + '日（' + DAY_NAMES[d.getDay()] + '）</div>' +
+          '<div class="bc-time">' + bk.time + '</div>';
+        list.appendChild(div);
+      });
+    }
+
+    function toggleCancel(idx) {
+      const i = cancelSelections.indexOf(idx);
+      if (i > -1) {
+        cancelSelections.splice(i, 1);
+      } else {
+        cancelSelections.push(idx);
+      }
+      const el = document.querySelector('[data-cancel-idx="' + idx + '"]');
+      if (el) el.classList.toggle('selected');
+    }
+
+    function confirmCancellation() {
+      if (cancelSelections.length === 0) {
+        alert('キャンセルする予約を選択してください。');
+        return;
+      }
+      const list = document.getElementById('cancelConfirmList');
+      list.innerHTML = '';
+      cancelSelections.forEach(idx => {
+        const bk = allBookings[idx];
+        const d = new Date(bk.date + 'T00:00:00');
+        const div = document.createElement('div');
+        div.className = 'confirm-row';
+        div.textContent = (d.getMonth()+1) + '月' + d.getDate() + '日（' + DAY_NAMES[d.getDay()] + '）' + bk.time;
+        list.appendChild(div);
+      });
+      showScreen('confirmCancelScreen');
+    }
+
+    async function submitCancellation() {
+      const btn = document.getElementById('cancelConfirmBtn');
+      btn.disabled = true;
+      btn.textContent = 'キャンセル中...';
+
+      const cancellations = cancelSelections.map(idx => ({
+        bookingRow: allBookings[idx].row,
+        creditRow: allBookings[idx].creditRow,
+        date: allBookings[idx].date,
+        time: allBookings[idx].time
+      }));
+
+      const payload = {
+        lineUserId,
+        lineDisplayName,
+        studentName: currentStudent.name,
+        cancellations,
+        submittedAt: new Date().toISOString()
+      };
+
+      try {
+        const res = await fetch(CONFIG.CANCEL_WEBHOOK, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          document.getElementById('successTitle').textContent = 'キャンセル完了';
+          document.getElementById('successMessage').textContent =
+            cancellations.length + ' 件の予約をキャンセルしました。クレジットが戻ります。';
+          showScreen('successScreen');
+        } else {
+          throw new Error();
+        }
+      } catch (err) {
+        showError('キャンセルに失敗しました。');
+      }
+    }
+
+    function showError(msg) {
+      document.getElementById('errorMessage').textContent = msg;
+      showScreen('errorScreen');
+    }
+
+    function closeLiff() {
+      try {
+        if (liff.isInClient()) liff.closeWindow();
+        else window.close();
+      } catch (err) {}
+    }
+
+    function showScreen(id) {
+      ['loading','mainScreen','gridScreen','confirmScreen','cancelScreen','confirmCancelScreen','successScreen','errorScreen'].forEach(s => {
+        document.getElementById(s).classList.add('hidden');
+      });
+      document.getElementById('actionBar').classList.add('hidden');
+      document.getElementById(id).classList.remove('hidden');
+      if (id === 'gridScreen' && selectedSlots.length > 0) {
+        document.getElementById('actionBar').classList.remove('hidden');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initLiff);
+  </script>
+</body>
+</html>
