@@ -561,9 +561,19 @@
     async function loadCredits() {
       try {
         const url = CONFIG.STUDENT_API + '?mode=adult_credits&studentName=' + encodeURIComponent(currentStudent.name) + '&secret=' + encodeURIComponent(CONFIG.API_SECRET);
+        
+        alert('DEBUG loadCredits: calling ' + url);
+        
         const res = await fetch(url);
+        
+        alert('DEBUG loadCredits: got response, status=' + res.status);
+        
         const data = await res.json();
+        
+        alert('DEBUG loadCredits: got data ' + JSON.stringify(data));
+        
         creditCount = data.available || 0;
+    // ... rest
         document.getElementById('creditCount').textContent = creditCount;
         document.getElementById('levelLabel').textContent = currentStudent.adultLevel || '-';
         document.getElementById('gridCredits').textContent = creditCount;
