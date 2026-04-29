@@ -600,24 +600,29 @@
       showScreen('gridScreen');
     }
 
-    async function loadWeek(weekStart) {
+     async function loadWeek(weekStart) {
       document.getElementById('dayList').innerHTML = '<div style="text-align:center;padding:20px;"><div class="spinner" style="width:24px;height:24px;display:inline-block;"></div></div>';
       try {
         let url = CONFIG.STUDENT_API + '?mode=adult_grid&studentName=' + encodeURIComponent(currentStudent.name) + '&secret=' + encodeURIComponent(CONFIG.API_SECRET);
         if (weekStart) url += '&weekStart=' + encodeURIComponent(weekStart);
+        
+        alert('DEBUG: calling ' + url);
+        
         const res = await fetch(url);
         const data = await res.json();
+        
+        alert('DEBUG: got ' + data.days.length + ' days');
+        data.days.forEach((d, i) => {
+          alert('Day ' + i + ': ' + d.dayName + ' ' + d.displayDate + ', ' + d.slots.length + ' slots');
+        });
+        
         currentWeek = data;
         renderWeek(data);
-      } catch (err) {
-        document.getElementById('dayList').innerHTML = '<div class="status-error">読み込みに失敗しました。</div>';
-      }
-    }
 
     function renderWeek(data) {
       const monday = new Date(data.weekStart + 'T00:00:00');
       const sunday = new Date(monday);
-      sunday.setDate(monday.getDate() + 5);
+      sunday.setDate(monday.getDate() + 6);  // ← changed from 5
       document.getElementById('weekLabel').textContent =
         (monday.getMonth()+1) + '/' + monday.getDate() + ' - ' + (sunday.getMonth()+1) + '/' + sunday.getDate();
 
