@@ -507,33 +507,33 @@
 
     async function initLiff() {
       try {
-        await liff.init({ 
-          liffId: CONFIG.LIFF_ID,
-          withLoginOnExternalBrowser: true 
-        });
-        
-        if (!liff.isLoggedIn()) { 
-          liff.login(); 
-          return; 
-        }
-        
+        await liff.init({ liffId: CONFIG.LIFF_ID });
+        if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         lineUserId = profile.userId;
         lineDisplayName = profile.displayName;
+        
+        alert('DEBUG: Got profile. Calling loadStudent for ' + lineDisplayName);
+        
         await loadStudent();
-    
       } catch (err) {
-        // THIS PART IS KEY: It will show the specific error on your phone screen
-        console.error(err);
-        showError('Error Details: ' + err.code + " - " + err.message);
+        alert('DEBUG ERROR in initLiff: ' + err.message);
+        showError('LIFFの初期化に失敗しました。');
       }
     }
 
     async function loadStudent() {
       try {
         const url = CONFIG.STUDENT_API + '?mode=students&userId=' + encodeURIComponent(lineUserId) + '&secret=' + encodeURIComponent(CONFIG.API_SECRET);
+        
+        alert('DEBUG: Calling ' + url);
+        
         const res = await fetch(url);
         const data = await res.json();
+        
+        alert('DEBUG: Got data: ' + JSON.stringify(data));
+        
+        // ... rest of function
         if (!data.students || data.students.length === 0) {
           showError('生徒情報が見つかりません。');
           return;
