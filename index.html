@@ -590,28 +590,28 @@
     }
 
     // ════════ BOOKING FLOW ════════
-    async function startBooking() {
-      alert('DEBUG: startBooking called');
-      
-      if (creditCount <= 0) {
-        showError('予約可能なクレジットがありません。');
-        return;
-      }
-      
-      alert('DEBUG: creditCount=' + creditCount + ', clearing selections');
-      
-      selectedSlots = [];
-      
-      alert('DEBUG: about to call loadWeek');
-      
-      await loadWeek(null);
-      
-      alert('DEBUG: loadWeek completed, about to showScreen');
-      
-      showScreen('gridScreen');
-      
-      alert('DEBUG: showScreen completed');
+  async function startBooking() {
+    alert('DEBUG: startBooking called');
+    
+    if (creditCount <= 0) {
+      showError('予約可能なクレジットがありません。');
+      return;
     }
+    
+    alert('DEBUG: creditCount=' + creditCount + ', clearing selections');
+    
+    selectedSlots = [];
+    
+    alert('DEBUG: about to call loadWeek');
+    
+    await loadWeek(null);
+    
+    alert('DEBUG: loadWeek completed, about to showScreen');
+    
+    showScreen('gridScreen');
+    
+    alert('DEBUG: showScreen completed');
+  }
 
    async function loadWeek(weekStart) {
     document.getElementById('dayList').innerHTML = '<div style="text-align:center;padding:20px;"><div class="spinner" style="width:24px;height:24px;display:inline-block;"></div></div>';
@@ -628,9 +628,9 @@
       data.days.forEach((d, i) => {
         alert('Day ' + i + ': ' + d.dayName + ' ' + d.displayDate + ', ' + d.slots.length + ' slots');
       });
-      
-    currentWeek = data;
-    renderWeek(data);
+    
+      currentWeek = data;
+      renderWeek(data);
 
     function renderWeek(data) {
       const monday = new Date(data.weekStart + 'T00:00:00');
