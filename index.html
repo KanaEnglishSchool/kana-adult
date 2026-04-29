@@ -505,75 +505,60 @@
 
     const DAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
 
-  async function initLiff() {
-    try {
-      await liff.init({ liffId: CONFIG.LIFF_ID });
-      if (!liff.isLoggedIn()) { liff.login(); return; }
-      const profile = await liff.getProfile();
-      lineUserId = profile.userId;
-      lineDisplayName = profile.displayName;
-      
-      alert('DEBUG: Got profile. Calling loadStudent for ' + lineDisplayName);
-      
-      await loadStudent();
-    } catch (err) {
-      alert('DEBUG ERROR in initLiff: ' + err.message);
-      showError('LIFFの初期化に失敗しました。');
+    async function initLiff() {
+      try {
+        await liff.init({ liffId: CONFIG.LIFF_ID });
+        if (!liff.isLoggedIn()) { liff.login(); return; }
+        const profile = await liff.getProfile();
+        lineUserId = profile.userId;
+        lineDisplayName = profile.displayName;
+        
+        console.log('Got profile:', lineDisplayName);
+        
+        await loadStudent();
+      } catch (err) {
+        console.error('initLiff error:', err);
+        showError('LIFFの初期化に失敗しました。');
+      }
     }
-  }
-
+  
   async function loadStudent() {
     try {
       const url = CONFIG.STUDENT_API + '?mode=students&userId=' + encodeURIComponent(lineUserId) + '&secret=' + encodeURIComponent(CONFIG.API_SECRET);
-      
-      alert('DEBUG: Calling ' + url);
-      
+      console.log('Fetching students from:', url);
       const res = await fetch(url);
       const data = await res.json();
-
-        alert('DEBUG: Got data with ' + data.students.length + ' students');
-        
-        data.students.forEach((s, i) => {
-          alert('Student ' + i + ': ' + s.name + ', className=' + s.className + ', isAdult=' + s.isAdult);
-        });
-        
-        if (!data.students || data.students.length === 0) {
-          showError('生徒情報が見つかりません。');
-          return;
-        }
-        
-        currentStudent = data.students.find(s => s.isAdult);
-        
-        alert('DEBUG: Found adult student? ' + (currentStudent ? currentStudent.name : 'NO'));
-        
-        if (!currentStudent) {
-          showError('大人レッスンの登録がありません。');
-          return;
-        }
-        
-        await loadCredits();
-        showScreen('mainScreen');
+      console.log('Got students:', data);
+      
+      if (!data.students || data.students.length === 0) {
+        showError('生徒情報が見つかりません。');
+        return;
+      }
+      
+      currentStudent = data.students.find(s => s.isAdult);
+      console.log('Found adult student:', currentStudent);
+      
+      if (!currentStudent) {
+        showError('大人レッスンの登録がありません。');
+        return;
+      }
+      
+      await loadCredits();
     } catch (err) {
-      showError('情報の読み込みに失敗しました。');
+      console.error('loadStudent error:', err);
+      showError('生徒情報の読み込みに失敗しました。');
     }
   }
-
+  
   async function loadCredits() {
     try {
       const url = CONFIG.STUDENT_API + '?mode=adult_credits&studentName=' + encodeURIComponent(currentStudent.name) + '&secret=' + encodeURIComponent(CONFIG.API_SECRET);
-      
-      alert('DEBUG loadCredits: calling ' + url);
-      
+      console.log('Fetching credits from:', url);
       const res = await fetch(url);
-      
-      alert('DEBUG loadCredits: got response, status=' + res.status);
-      
       const data = await res.json();
-      
-      alert('DEBUG loadCredits: got data ' + JSON.stringify(data));
+      console.log('Got credits:', data);
       
       creditCount = data.available || 0;
-  // ... rest
       document.getElementById('creditCount').textContent = creditCount;
       document.getElementById('levelLabel').textContent = currentStudent.adultLevel || '-';
       document.getElementById('gridCredits').textContent = creditCount;
@@ -584,8 +569,12 @@
         document.getElementById('creditExpiry').textContent =
           '次回有効期限: ' + (exp.getMonth()+1) + '月' + exp.getDate() + '日';
       }
+      
+      console.log('Credits loaded, showing main screen');
+      showScreen('mainScreen');
     } catch (err) {
-      console.error(err);
+      console.error('loadCredits error:', err);
+      showError('クレジット情報の読み込みに失敗しました。');
     }
   }
 
