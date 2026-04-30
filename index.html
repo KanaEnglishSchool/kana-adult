@@ -680,7 +680,10 @@
       const btn = document.getElementById('bookBtn');
       btn.disabled = true;
       btn.textContent = '予約中...';
-    
+      const lessonsSummary = lessons.map(l => {
+        const d = new Date(l.date + 'T00:00:00');
+        return '・' + (d.getMonth()+1) + '月' + d.getDate() + '日（' + DAY_NAMES[d.getDay()] + '）' + l.time;
+        }).join('\n');
       const lessons = selectedSlots.map(key => {
         const [date, time] = key.split('|');
         return { date, time };
