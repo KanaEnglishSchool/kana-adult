@@ -443,14 +443,14 @@
       <div id="confirmList"></div>
     </div>
     <div class="info-box" id="confirmCreditInfo"></div>
-    <div class="info-box">⚠️ キャンセルは前日20時まで可能です。それ以降はお電話ください。</div>
+    <div class="info-box">キャンセルしたいレッスンを選択してください。<br>キャンセル後、クレジットは元の有効期限のまま戻ります。</div>
     <button class="btn btn-primary" id="bookBtn" onclick="submitBookings()">予約を確定する</button>
     <button class="btn btn-secondary" onclick="showScreen('gridScreen')">修正する</button>
   </div>
 
   <!-- ════════ CANCEL SCREEN ════════ -->
   <div id="cancelScreen" class="container hidden">
-    <div class="info-box">キャンセルしたいレッスンを選択してください。<br>キャンセル可能: 前日20時まで</div>
+    <div class="info-box">予約後はいつでもキャンセル可能です。クレジットは元の有効期限のまま戻ります。</div>
     <div id="cancelList"></div>
     <button class="btn btn-primary" onclick="confirmCancellation()">選択した予約をキャンセル</button>
     <button class="btn btn-secondary" onclick="showScreen('mainScreen')">戻る</button>
@@ -849,12 +849,31 @@
 
     function closeLiff() {
       try {
-        if (liff.isInClient()) liff.closeWindow();
-        else window.close();
+        if (liff.isInClient && liff.isInClient()) {
+          liff.closeWindow();
+          return;
+        }
+      } catch (err) {
+        console.error('liff.closeWindow failed:', err);
+      }
+      
+      try {
+        window.close();
       } catch (err) {}
+      
+      // Fallback: show message asking user to swipe to close
+      setTimeout(function() {
+        var successScreen = document.getElementById('successScreen');
+        if (successScreen) {
+          var msg = document.createElement('p');
+          msg.style.cssText = 'margin-top:16px;font-size:12px;color:#999;';
+          msg.textContent = '閉じない場合は画面を下にスワイプしてください。';
+          successScreen.appendChild(msg);
+        }
+      }, 300);
     }
-
-    function showScreen(id) {
+    
+        function showScreen(id) {
       ['loading','mainScreen','gridScreen','confirmScreen','cancelScreen','confirmCancelScreen','successScreen','errorScreen'].forEach(s => {
         document.getElementById(s).classList.add('hidden');
       });
