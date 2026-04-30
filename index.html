@@ -676,55 +676,7 @@
       showScreen('confirmScreen');
     }
 
-    async function submitBookings() {
-      const btn = document.getElementById('bookBtn');
-      btn.disabled = true;
-      btn.textContent = '予約中...';
-      const lessonsSummary = lessons.map(l => {
-        const d = new Date(l.date + 'T00:00:00');
-        return '・' + (d.getMonth()+1) + '月' + d.getDate() + '日（' + DAY_NAMES[d.getDay()] + '）' + l.time;
-      }).join('\n');
-      const lessons = selectedSlots.map(key => {
-        const [date, time] = key.split('|');
-        return { date, time };
-      });
     
-      // Sort by date+time and format a readable summary
-      lessons.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
-      const lessonsSummary = lessons.map(l => {
-        const d = new Date(l.date + 'T00:00:00');
-        return '・' + (d.getMonth()+1) + '月' + d.getDate() + '日（' + DAY_NAMES[d.getDay()] + '）' + l.time;
-      }).join('\n');
-    
-      const payload = {
-        lineUserId,
-        lineDisplayName,
-        studentName: currentStudent.name,
-        adultLevel: currentStudent.adultLevel,
-        lessons,
-        lessonsSummary,
-        lessonCount: lessons.length,
-        submittedAt: new Date().toISOString()
-      };
-    
-      try {
-        const res = await fetch(CONFIG.BOOKING_WEBHOOK, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (res.ok) {
-          document.getElementById('successTitle').textContent = '予約完了';
-          document.getElementById('successMessage').textContent =
-            selectedSlots.length + ' 件のレッスンを予約しました。';
-          showScreen('successScreen');
-        } else {
-          throw new Error();
-        }
-      } catch (err) {
-        showError('予約に失敗しました。');
-      }
-    }
 
     // ════════ CANCEL FLOW ════════
     async function startCancel() {
