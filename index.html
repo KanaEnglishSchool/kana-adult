@@ -848,29 +848,19 @@
     }
 
     function closeLiff() {
+      alert('DEBUG: isInClient=' + (liff.isInClient ? liff.isInClient() : 'undefined'));
       try {
         if (liff.isInClient && liff.isInClient()) {
+          alert('DEBUG: calling closeWindow');
           liff.closeWindow();
-          return;
+          alert('DEBUG: closeWindow returned without error');
+        } else {
+          alert('DEBUG: not in client, trying window.close');
+          window.close();
         }
       } catch (err) {
-        console.error('liff.closeWindow failed:', err);
+        alert('DEBUG: error: ' + err.message);
       }
-      
-      try {
-        window.close();
-      } catch (err) {}
-      
-      // Fallback: show message asking user to swipe to close
-      setTimeout(function() {
-        var successScreen = document.getElementById('successScreen');
-        if (successScreen) {
-          var msg = document.createElement('p');
-          msg.style.cssText = 'margin-top:16px;font-size:12px;color:#999;';
-          msg.textContent = '閉じない場合は画面を下にスワイプしてください。';
-          successScreen.appendChild(msg);
-        }
-      }, 300);
     }
     
         function showScreen(id) {
