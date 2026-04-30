@@ -796,22 +796,33 @@
       const btn = document.getElementById('cancelConfirmBtn');
       btn.disabled = true;
       btn.textContent = 'キャンセル中...';
-
+    
       const cancellations = cancelSelections.map(idx => ({
         bookingRow: allBookings[idx].row,
         creditRow: allBookings[idx].creditRow,
         date: allBookings[idx].date,
         time: allBookings[idx].time
       }));
-
+    
+      // Sort by date+time
+      cancellations.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    
+      // Format readable summary
+      const cancellationSummary = cancellations.map(c => {
+        const d = new Date(c.date + 'T00:00:00');
+        return '・' + (d.getMonth()+1) + '月' + d.getDate() + '日（' + DAY_NAMES[d.getDay()] + '）' + c.time;
+      }).join('\n');
+    
       const payload = {
         lineUserId,
         lineDisplayName,
         studentName: currentStudent.name,
         cancellations,
+        cancellationSummary,
+        cancelCount: cancellations.length,
         submittedAt: new Date().toISOString()
       };
-
+    
       try {
         const res = await fetch(CONFIG.CANCEL_WEBHOOK, {
           method: 'POST',
@@ -821,7 +832,7 @@
         if (res.ok) {
           document.getElementById('successTitle').textContent = 'キャンセル完了';
           document.getElementById('successMessage').textContent =
-            cancellations.length + ' 件の予約をキャンセルしました。クレジットが戻ります。';
+            cancellations.length + ' 件の予約をキャンセルしました。';
           showScreen('successScreen');
         } else {
           throw new Error();
