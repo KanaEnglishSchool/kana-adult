@@ -848,19 +848,14 @@
     }
 
     function closeLiff() {
-      alert('DEBUG: isInClient=' + (liff.isInClient ? liff.isInClient() : 'undefined'));
       try {
-        if (liff.isInClient && liff.isInClient()) {
-          alert('DEBUG: calling closeWindow');
-          liff.closeWindow();
-          alert('DEBUG: closeWindow returned without error');
-        } else {
-          alert('DEBUG: not in client, trying window.close');
-          window.close();
-        }
-      } catch (err) {
-        alert('DEBUG: error: ' + err.message);
-      }
+        if (typeof liff !== 'undefined' && liff.closeWindow) liff.closeWindow();
+      } catch (err) {}
+      try { window.close(); } catch (err) {}
+      setTimeout(function() {
+        var msg = document.getElementById('closeMessage');
+        if (msg) msg.classList.remove('hidden');
+      }, 500);
     }
     
         function showScreen(id) {
