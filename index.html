@@ -804,10 +804,8 @@
         time: allBookings[idx].time
       }));
     
-      // Sort by date+time
       cancellations.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
     
-      // Format readable summary
       const cancellationSummary = cancellations.map(c => {
         const d = new Date(c.date + 'T00:00:00');
         return '・' + (d.getMonth()+1) + '月' + d.getDate() + '日（' + DAY_NAMES[d.getDay()] + '）' + c.time;
@@ -832,7 +830,7 @@
         if (res.ok) {
           document.getElementById('successTitle').textContent = 'キャンセル完了';
           document.getElementById('successMessage').textContent =
-            cancellations.length + ' 件の予約をキャンセルしました。閉じるボタン使えない場合上の X を押してください。';
+            cancellations.length + ' 件の予約をキャンセルしました。閉じるボタン使えない場合は上の X を押してください。';
           showScreen('successScreen');
         } else {
           throw new Error();
