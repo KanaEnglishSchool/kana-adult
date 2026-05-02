@@ -832,8 +832,7 @@
         if (res.ok) {
           document.getElementById('successTitle').textContent = 'キャンセル完了';
           document.getElementById('successMessage').textContent =
-            cancellations.length + ' 件の予約をキャンセルしました。
-            閉じるボタン使えない場合上の X を押してください。';
+            cancellations.length + ' 件の予約をキャンセルしました。閉じるボタン使えない場合上の X を押してください。';
           showScreen('successScreen');
         } else {
           throw new Error();
