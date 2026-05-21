@@ -549,12 +549,23 @@
         return;
       }
       selectedSlots = [];
-      await loadWeek(null);
-      showScreen('gridScreen');
+      showLoading('予約可能な日時を読み込み中...');
+      try {
+        await loadWeek(null);
+        showScreen('gridScreen');
+      } finally {
+        hideLoading();
+      }
     }
-
+    
     async function loadWeek(weekStart) {
-      document.getElementById('dayList').innerHTML = '<div style="text-align:center;padding:20px;"><div class="spinner" style="width:24px;height:24px;display:inline-block;"></div></div>';
+      // If gridScreen is already visible, show inline spinner
+      // Otherwise (first load), the loading overlay handles it
+      const isGridVisible = !document.getElementById('gridScreen').classList.contains('hidden');
+      if (isGridVisible) {
+        document.getElementById('dayList').innerHTML = '<div style="text-align:center;padding:20px;"><div class="spinner" style="width:24px;height:24px;display:inline-block;"></div></div>';
+      }
+      
       try {
         let url = CONFIG.STUDENT_API + '?mode=adult_grid&studentName=' + encodeURIComponent(currentStudent.name) + '&secret=' + encodeURIComponent(CONFIG.API_SECRET);
         if (weekStart) url += '&weekStart=' + encodeURIComponent(weekStart);
@@ -609,7 +620,18 @@
 
       updateActionBar();
     }
-
+    function showLoading(msg) {
+      const overlay = document.getElementById('loading');
+      if (msg) {
+        const p = overlay.querySelector('p');
+        if (p) p.textContent = msg;
+      }
+      overlay.classList.remove('hidden');
+    }
+    
+    function hideLoading() {
+      document.getElementById('loading').classList.add('hidden');
+    }
     function toggleSlot(date, time) {
       const key = date + '|' + time;
       const idx = selectedSlots.indexOf(key);
@@ -707,22 +729,24 @@
 
     async function startCancel() {
       cancelSelections = [];
-      showScreen('cancelScreen');
-      document.getElementById('cancelList').innerHTML = '<div style="text-align:center;padding:20px;"><div class="spinner" style="width:24px;height:24px;display:inline-block;"></div></div>';
-
+      showLoading('予約一覧を読み込み中...');
       try {
         const url = CONFIG.STUDENT_API + '?mode=adult_bookings&studentName=' + encodeURIComponent(currentStudent.name) + '&secret=' + encodeURIComponent(CONFIG.API_SECRET);
         const res = await fetch(url);
         const data = await res.json();
         allBookings = data.bookings || [];
+        showScreen('cancelScreen');
         if (allBookings.length === 0) {
           document.getElementById('cancelList').innerHTML =
             '<div class="empty-state"><div class="icon">📭</div>キャンセル可能な予約はありません。</div>';
-          return;
+        } else {
+          renderCancelList();
         }
-        renderCancelList();
       } catch (err) {
+        showScreen('cancelScreen');
         document.getElementById('cancelList').innerHTML = '<div class="status-error">読み込みに失敗しました。</div>';
+      } finally {
+        hideLoading();
       }
     }
 
